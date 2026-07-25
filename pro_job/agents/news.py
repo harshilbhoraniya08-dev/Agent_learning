@@ -2,6 +2,7 @@ import asyncio
 from model import AgentTask, ResultTask, SearchInput, SearchResult, NewsAnalysis
 from tools.search_tools import search_tool
 from llm import call_llm
+from agents.base_agent import run_agent
 
 async def news(queue, result_queue):
     while True:
@@ -9,43 +10,28 @@ async def news(queue, result_queue):
         task = AgentTask.model_validate(task_data)
         if task.agent == 'news':
             print('News seach start')
-            search = SearchInput(
-                query=task.task,
-                max_result=5
-            )
-            articles = await search_tool(search)
-            answer = await call_llm(
-                [
-                    {
-                    'role':'system',
-                    'content':"""
-                    You are a news analyst agent.
-                    Analyze the provided news.
+            messages = [
+                {
+                    "role":"system",
+                    "content":"""You are a news analyst.
 
-                    Return ONLY JSON with this exact structure:
-                    {
-                        "title": "string",
-                        "summary": "string",
-                        "key_points": [
-                            "point 1",
-                            "point 2"],
-                        "confidence": 0.95
-                    }
-                    Rules:
-                    - title must be a string
-                    - summary must explain the news
-                    - key_points must contain important facts
-                    - confidence must be a number between 0 and 1
+                    You can use available tools whenever needed.
+
+                    Your job is:
+                    - Find the latest news
+                    - Analyze the news
+                    - Summarize important information
+                    - Give clear key points
+
+                    Use tools whenever they are helpful before answering.
                     """
-                    },
-
-                    {
-                    'role':'user',
-                    'content':f"""Task:{task.task}   News data: {articles}"""
-                        
-                    }
-                ], NewsAnalysis
-            )
+                }, 
+                {
+                    "role":"user",
+                    "content":task.task
+                }
+            ]
+            answer = await run_agent(messages,output_model=NewsAnalysis)
             result = ResultTask(
                 agent=task.agent, result=answer
             )

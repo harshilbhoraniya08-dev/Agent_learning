@@ -2,6 +2,7 @@ import os
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 import json
+from tools.tool_registery import TOOLS
 
 load_dotenv()
 
@@ -49,3 +50,13 @@ async def stream_llm(messages):
 
         if token:
             yield token
+
+async def call_llm_with_tools(messages):
+    response = await client.chat.completions.create(
+        model= "openrouter/free",
+        messages=messages,
+        temperature=0.2,
+        tools=TOOLS 
+    )
+
+    return response

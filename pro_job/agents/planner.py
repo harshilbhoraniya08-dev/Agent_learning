@@ -1,9 +1,10 @@
 from model import Plan
 from llm import call_llm
 from llm import stream_llm
+from agents.base_agent import run_agent
 
-async def planner(user_query):
-    plan = await call_llm(
+async def planner(user_query, output_model=Plan):
+    plan = await run_agent(
         [
             {
                 'role':'system',
