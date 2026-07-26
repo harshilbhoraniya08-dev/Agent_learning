@@ -13,7 +13,7 @@ client = AsyncOpenAI(
 
 
 async def call_llm(messages, output_model):
-    responce = await client.chat.completions.create(
+    response = await client.chat.completions.create(
         model='openrouter/free',
         messages=messages,
         temperature=0.2,
@@ -23,7 +23,7 @@ async def call_llm(messages, output_model):
 
     )
 
-    content = responce.choices[0].message.content
+    content = response.choices[0].message.content
 
     data = json.loads(content)
     print("---------------------------------")
@@ -35,7 +35,7 @@ async def call_llm(messages, output_model):
         print("Validation failed")
         print(data)
         raise e
-    
+
 
 async def stream_llm(messages):
     response = await client.chat.completions.create(
@@ -56,7 +56,8 @@ async def call_llm_with_tools(messages):
         model= "openrouter/free",
         messages=messages,
         temperature=0.2,
-        tools=TOOLS 
+        tools=TOOLS, 
+        tool_choice="auto"
     )
 
     return response

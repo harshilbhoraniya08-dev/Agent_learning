@@ -10,28 +10,69 @@ class AgentTask(BaseModel):
         le=5
     )
 
+class Plan(BaseModel):
+    tasks: List[AgentTask]
+
+#-------------
+# Agent Result
+#-------------
+    
 class ResultTask(BaseModel):
     agent:str
     result:Any
+
+#-------------
+# Analysis Outputs
+#-------------
+
 
 class NewsAnalysis(BaseModel):
     title: str
     summary: str
     key_points: list[str]
-    confidence: float
+    confidence: float = Field(
+         ge=0,
+         le=1
+    )
 
 class ResearchAnalysis(BaseModel):
     title: str
     summary: str
     key_points: list[str]
-    confidence: float
+    confidence: float = Field(
+         ge=0,
+         le=1
+    )
+
+#---------------
+# Input/Outpu (Tools)
+#---------------
 
 class SearchInput(BaseModel):
     query:str
-    max_result:int
+    max_result:int = 5
 
 class SearchResult(BaseModel):
         articles: list[str]
 
-class Plan(BaseModel):
-    tasks: List[AgentTask]
+#----------------
+# Final Answer
+#----------------
+        
+class FinalAnswer(BaseModel):
+    title: str
+    summary: str
+
+    key_insights: list[str] = Field(
+        default_factory=list
+    )
+
+    key_points: list[str] = Field(
+        default_factory=list
+    )
+
+    recommendations: list[str] = Field(
+        default_factory=list
+    )
+
+    confidence: float = 0.0

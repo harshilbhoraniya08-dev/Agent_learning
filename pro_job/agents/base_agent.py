@@ -1,31 +1,109 @@
-import asyncio
-from tools.tool_registery import TOOLS
+import json
+
 from tools.tool_executor import execute_tool
 from llm import call_llm_with_tools
 
+
 async def run_agent(messages, output_model=None):
+
     while True:
-        responce = await call_llm_with_tools(messages)
-        message = responce.choices[0].message
+
+        response = await call_llm_with_tools(messages)
+
+        message = response.choices[0].message
+
         print("----------------")
         print("ROLE:", message.role)
         print("CONTENT:", message.content)
         print("TOOL CALLS:", message.tool_calls)
         print("----------------")
-        messages.append(message)
 
 
+        # If LLM wants to use tools
         if message.tool_calls:
-            tool_call = message.tool_calls[0]
-            result = await execute_tool(tool_call)
-            messages.append(
-                {
-                    "role":"tool",
-                    "tool_call_id":tool_call.id,
-                    "content":str(result)
-                }
-            )
-            print('Final Tool Result:')
-            print(result)
-        else:
-            return message.content
+
+            messages.append(message)
+
+
+            for tool_call in message.tool_calls:
+
+                result = await execute_tool(tool_call)
+
+                print("Final Tool Result:")
+                print(result)
+
+
+                if hasattr(result, "model_dump"):
+                    tool_content = json.dumps(result.model_dump())
+
+                else:
+                    tool_content = json.dumps(result)
+
+
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": tool_content,
+                    }
+                )
+
+
+            # IMPORTANT CHANGE
+            # Tell model to return structured output after tools
+
+            if output_model is not None:
+
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": f"""
+                        The tool results are available above.
+
+                        Now provide the final answer.
+
+                        You MUST return ONLY valid JSON.
+
+                        Do not use markdown.
+                        Do not add explanations.
+                        Do not add ```.
+
+                        Follow this schema:
+
+                        {json.dumps(output_model.model_json_schema(), indent=2)}
+                        """
+                    }
+                )
+
+
+            continue
+
+
+
+        # Final response without tools
+
+        if output_model is not None:
+
+            try:
+
+                data = json.loads(message.content)
+
+                return output_model.model_validate(data)
+
+
+            except json.JSONDecodeError as e:
+
+                raise ValueError(
+                    f"""
+                    Model returned invalid JSON.
+
+                    Expected schema:
+                    {output_model.model_json_schema()}
+
+                    Received:
+                    {message.content}
+                    """
+                ) from e
+
+
+        return message.content

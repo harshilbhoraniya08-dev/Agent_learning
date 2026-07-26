@@ -2,21 +2,38 @@ from llm import stream_llm
 from parsers.streming_parser import parse_json_stream
 from model import Plan
 
-async def stream_planner(user_query):
-
-    messages = [
+def build_planner_messages(user_query):
+    return [
         {
+
             "role": "system",
             "content": """
-                You are a task planner agent.
+            You are a task planner.
 
-                Your job is to decide which agent should handle the user's request.
+            Your ONLY job is to create a JSON task plan.
 
-                Available agents:
-                1. news
-                            2. research
+            Available agents:
 
-            Return ONLY valid JSON.
+            1. news
+            - latest news
+            - announcements
+            - current events
+
+            2. research
+            - analysis
+            - explanation
+            - business impact
+
+
+            Return ONLY raw JSON.
+
+            Never return:
+            - markdown
+            - explanations
+            - safety messages
+            - comments
+
+            The format MUST be:
 
             {
                 "tasks": [
@@ -33,15 +50,22 @@ async def stream_planner(user_query):
                 ]
             }
             """
-        },
-        {
-            "role": "user",
-            "content": user_query
-        }
+            },
+            {
+                "role":"user",
+                "content":user_query
+            }
     ]
 
+
+async def stream_planner(user_query):
+    messages = build_planner_messages(user_query)
     token_stream = stream_llm(messages)
 
     async for data in parse_json_stream(token_stream):
-        plan = Plan.model_validate(data)
-        yield plan
+        try:
+            plan = Plan.model_validate(data)
+            print('Planner Compeleted')
+            yield plan
+        except Exception as e:
+            print(f"Planner Validation Error: {e}")
