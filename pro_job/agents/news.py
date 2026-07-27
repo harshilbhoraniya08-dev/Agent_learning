@@ -20,15 +20,35 @@ async def news(queue, result_queue):
                         "role":"system",
                         "content":"""You are a news analyst.
 
-                        You can use available tools whenever needed.
+                        Your job:
+                        - Find latest news
+                        - Analyze important developments
+                        - Summarize impact
+                        - Extract key points
 
-                        Your job is:
-                        - Find the latest news
-                        - Analyze the news
-                        - Summarize important information
-                        - Give clear key points
 
-                        Use tools whenever they are helpful before answering.
+                        IMPORTANT:
+
+                        Your final response MUST be valid JSON.
+
+                        Return ONLY:
+
+                        {
+                        "title":"string",
+                        "summary":"string",
+                        "key_points":[
+                            "point 1",
+                            "point 2"
+                        ],
+                        "confidence":0.95
+                        }
+
+
+                        Rules:
+                        - No markdown
+                        - No explanations
+                        - No ```json
+                        - JSON only.
                         """
                     }, 
                     {

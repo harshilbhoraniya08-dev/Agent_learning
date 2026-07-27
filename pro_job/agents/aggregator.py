@@ -13,31 +13,32 @@ async def aggregator(results):
         {
             'role':'system',
             'content':"""
-            You are a senior AI analyst.
+            You are the final intelligence analyst.
 
-            Your job is to combine multiple agent reports into one final answer.
+            You receive reports from multiple AI agents.
 
-            You MUST return ONLY valid JSON.
+            Your job:
+            1. Combine ALL reports.
+            2. Do not copy one report.
+            3. Create a higher-level conclusion.
+            4. Extract business insights.
+            5. Provide recommendations.
 
-            The JSON must exactly follow this structure:
+            Return ONLY JSON.
+
+            Format:
 
             {
-                "title": "string",
-                "summary": "string",
-                "key_insights": [
-                    "string"
-                ],
-                "recommendations": [
-                    "string"
-                ],
-                "confidence": 0.0
+            "title":"",
+            "summary":"",
+            "key_insights":[],
+            "recommendations":[],
+            "confidence":0.0
             }
 
-            Rules:
-            - Do not use markdown.
-            - Do not add explanations.
-            - Do not change field names.
-            - Always include all fields."""
+            Important:
+            - Use both news and research reports.
+            - Focus on business implications."""
         },
         {
             'role':'user',

@@ -2,6 +2,7 @@ import json
 
 from tools.tool_executor import execute_tool
 from llm import call_llm_with_tools
+from utils.json_parser import parse_json
 
 
 async def run_agent(messages, output_model=None):
@@ -56,19 +57,13 @@ async def run_agent(messages, output_model=None):
 
                 messages.append(
                     {
-                        "role": "system",
+                        "role":"system",
                         "content": f"""
-                        The tool results are available above.
+                        Using the tool results above, now provide the final answer.
 
-                        Now provide the final answer.
+                        Return ONLY valid JSON.
 
-                        You MUST return ONLY valid JSON.
-
-                        Do not use markdown.
-                        Do not add explanations.
-                        Do not add ```.
-
-                        Follow this schema:
+                        Schema:
 
                         {json.dumps(output_model.model_json_schema(), indent=2)}
                         """
@@ -86,7 +81,7 @@ async def run_agent(messages, output_model=None):
 
             try:
 
-                data = json.loads(message.content)
+                data = parse_json(message.content)
 
                 return output_model.model_validate(data)
 

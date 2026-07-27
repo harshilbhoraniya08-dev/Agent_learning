@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Any, Optional,List
 
 class AgentTask(BaseModel):
+    id: str
     agent:str
     task:str
     priority:int=Field(
@@ -9,6 +10,8 @@ class AgentTask(BaseModel):
         ge=1,
         le=5
     )
+
+    depends_on: List[str] = Field(default_factory=list)
 
 class Plan(BaseModel):
     tasks: List[AgentTask]

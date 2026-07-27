@@ -38,14 +38,18 @@ def build_planner_messages(user_query):
             {
                 "tasks": [
                     {
-                        "agent": "news",
-                        "task": "Find latest AI developments",
-                        "priority": 1
+                        "id":"news_1",
+                        "agent":"news",
+                        "task":"Find latest AI developments",
+                        "priority":1,
+                        "depends_on":[]
                     },
                     {
-                        "agent": "research",
-                        "task": "Analyze business impact",
-                        "priority": 2
+                        "id":"research_1",
+                        "agent":"research",
+                        "task":"Analyze business impact",
+                        "priority":2,
+                        "depends_on":["news_1"]
                     }
                 ]
             }
